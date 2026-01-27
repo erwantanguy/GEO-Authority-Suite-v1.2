@@ -1,0 +1,123 @@
+#adminmenu .wp-has-current-submenu .wp-submenu {
+    margin-left: 0;
+}
+
+.geo-schema-properties {
+    background: #fff;
+}
+
+.geo-schema-properties h4 {
+    margin: 20px 0 10px;
+    padding: 10px;
+    background: #f0f0f0;
+    border-left: 3px solid #0073aa;
+    font-size: 14px;
+    font-weight: 600;
+}
+
+.geo-schema-properties .form-table th {
+    width: 200px;
+}
+
+.entity-link {
+    color: #0073aa;
+    text-decoration: underline;
+}
+
+.entity-mention {
+    font-weight: 600;
+    color: #23282d;
+}
+
+/* AI Indexing Page Styles */
+.geo-ai-indexing-page .geo-stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 15px;
+    margin: 20px 0;
+}
+
+.geo-ai-indexing-page .geo-stat-card {
+    background: #fff;
+    border: 1px solid #c3c4c7;
+    border-radius: 4px;
+    padding: 20px;
+    text-align: center;
+}
+
+.geo-ai-indexing-page .geo-stat-value {
+    display: block;
+    font-size: 28px;
+    font-weight: 600;
+    color: #1d2327;
+    line-height: 1.2;
+}
+
+.geo-ai-indexing-page .geo-stat-label {
+    display: block;
+    font-size: 13px;
+    color: #646970;
+    margin-top: 5px;
+}
+
+.geo-ai-indexing-page .geo-stat-success {
+    border-left: 4px solid #00a32a;
+}
+
+.geo-ai-indexing-page .geo-stat-info {
+    border-left: 4px solid #72aee6;
+}
+
+.geo-ai-indexing-page .geo-stat-warning {
+    border-left: 4px solid #dba617;
+}
+
+.geo-ai-indexing-page .geo-section {
+    margin: 20px 0;
+    padding: 20px;
+}
+
+.geo-ai-indexing-page .geo-section h2 {
+    margin-top: 0;
+    padding-bottom: 10px;
+    border-bottom: 1px solid #c3c4c7;
+}
+
+.geo-ai-indexing-page .geo-info-card {
+    background: #f0f6fc;
+    border-left: 4px solid #72aee6;
+}
+
+.geo-ai-indexing-page .geo-info-card h3 {
+    margin-top: 20px;
+    margin-bottom: 10px;
+    font-size: 14px;
+}
+
+.geo-ai-indexing-page .geo-info-card ul {
+    margin-left: 20px;
+}
+
+.geo-ai-indexing-page .geo-info-card code {
+    background: #fff;
+    padding: 2px 6px;
+    border-radius: 3px;
+}
+
+/* AI Indexing Metabox */
+.geo-ai-indexing-metabox hr {
+    margin: 15px 0;
+    border: none;
+    border-top: 1px solid #c3c4c7;
+}
+
+.geo-ai-indexing-metabox .description {
+    color: #646970;
+    font-size: 12px;
+}
+
+.geo-ai-indexing-metabox code {
+    background: #f0f0f1;
+    padding: 1px 4px;
+    font-size: 11px;
+}
