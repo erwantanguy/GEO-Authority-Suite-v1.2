@@ -103,6 +103,14 @@ function geo_build_entity_schema($entity) {
         case 'Restaurant':
         case 'Store':
             $schema = geo_add_organization_entity_properties($schema, $post_id);
+
+            // Multi-type automatique LocalBusiness + SportsOrganization si un sport est renseigne
+            // et qu'aucune organization parente n'est definie (evite la confusion de types)
+            $sport = get_post_meta($post_id, '_entity_sport', true);
+            $parent_organization = get_post_meta($post_id, '_entity_parent_organization', true);
+            if (!empty($sport) && $type === 'Organization' && empty($parent_organization)) {
+                $schema['@type'] = ['LocalBusiness', 'SportsOrganization'];
+            }
             break;
 
         case 'Service':
@@ -276,6 +284,55 @@ function geo_add_organization_entity_properties($schema, $post_id) {
         ];
     }
 
+    // Geolocalisation & plan
+    $geo_latitude = get_post_meta($post_id, '_entity_geo_latitude', true);
+    $geo_longitude = get_post_meta($post_id, '_entity_geo_longitude', true);
+    if (!empty($geo_latitude) && !empty($geo_longitude)) {
+        $schema['geo'] = [
+            '@type'     => 'GeoCoordinates',
+            'latitude'  => floatval($geo_latitude),
+            'longitude' => floatval($geo_longitude),
+        ];
+    }
+
+    $has_map = get_post_meta($post_id, '_entity_has_map', true);
+    if (!empty($has_map)) {
+        $schema['hasMap'] = esc_url($has_map);
+    }
+
+    // Horaires d'ouverture
+    $opening_hours = get_post_meta($post_id, '_entity_opening_hours', true);
+    if (!empty($opening_hours)) {
+        $decoded = json_decode($opening_hours, true);
+        if (json_last_error() === JSON_ERROR_NONE && !empty($decoded)) {
+            // Normaliser en tableau d'objets
+            $specs = isset($decoded['@type']) ? [$decoded] : $decoded;
+            $schema['openingHoursSpecification'] = $specs;
+        }
+    }
+
+    // Infos commerciales
+    $sport = get_post_meta($post_id, '_entity_sport', true);
+    if (!empty($sport)) {
+        $schema['sport'] = $sport;
+    }
+
+    $price_range = get_post_meta($post_id, '_entity_price_range', true);
+    if (!empty($price_range)) {
+        $schema['priceRange'] = $price_range;
+    }
+
+    // Avis agreges
+    $rating_value = get_post_meta($post_id, '_entity_rating_value', true);
+    $review_count = get_post_meta($post_id, '_entity_review_count', true);
+    if (!empty($rating_value) && !empty($review_count)) {
+        $schema['aggregateRating'] = [
+            '@type'       => 'AggregateRating',
+            'ratingValue' => floatval($rating_value),
+            'reviewCount' => intval($review_count),
+        ];
+    }
+
     // Génération automatique de hasOfferCatalog à partir des Services liés
     $linked_services = geo_get_services_for_organization($post_id);
     if (!empty($linked_services)) {
@@ -285,6 +342,24 @@ function geo_add_organization_entity_properties($schema, $post_id) {
             'name'  => sprintf(__('Services de %s', 'geo-authority-suite'), $org_name),
             'itemListElement' => $linked_services,
         ];
+    }
+
+    // Organization parente (parentOrganization) pour LocalBusiness et dérivés
+    $parent_organization = get_post_meta($post_id, '_entity_parent_organization', true);
+    if (!empty($parent_organization)) {
+        if ($parent_organization === 'main_organization') {
+            $schema['parentOrganization'] = [
+                '@id' => geo_entity_id('organization'),
+            ];
+        } else {
+            $parent_post = get_post($parent_organization);
+            if ($parent_post && $parent_post->post_type === 'entity') {
+                $parent_name = get_the_title($parent_post);
+                $schema['parentOrganization'] = [
+                    '@id' => geo_entity_id('organization', sanitize_title($parent_name)),
+                ];
+            }
+        }
     }
 
     // Génération automatique de founder à partir des Person avec rôle fondateur
@@ -371,6 +446,14 @@ function geo_output_jsonld() {
     if (empty($graph)) {
         return;
     }
+
+    /**
+     * Filtre public permettant d'enrichir ou de modifier le graphe JSON-LD
+     * avant son affichage dans le <head>.
+     *
+     * @param array $graph Tableau de schémas Schema.org.
+     */
+    $graph = apply_filters('geo_jsonld_output', $graph);
 
     echo "\n" . '<script type="application/ld+json">' . "\n";
     echo wp_json_encode(

@@ -9,6 +9,11 @@ if (!defined('ABSPATH')) {
 
 function geo_run_entity_audit(): array {
 
+    // Peupler le registre d'entités en contexte admin (wp_head ne s'exécute pas ici)
+    if (function_exists('geo_register_all_entities') && geo_count_entities() === 0) {
+        geo_register_all_entities();
+    }
+
     $entities = geo_get_entities();
     $count = count($entities);
 

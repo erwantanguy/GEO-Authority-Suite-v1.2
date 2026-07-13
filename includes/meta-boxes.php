@@ -123,6 +123,15 @@ function geo_entity_schema_meta_box($post) {
     $contact_point_email = get_post_meta($post->ID, '_entity_contact_point_email', true);
     $contact_point_lang = get_post_meta($post->ID, '_entity_contact_point_lang', true);
 
+    $geo_latitude  = get_post_meta($post->ID, '_entity_geo_latitude', true);
+    $geo_longitude = get_post_meta($post->ID, '_entity_geo_longitude', true);
+    $has_map       = get_post_meta($post->ID, '_entity_has_map', true);
+    $rating_value  = get_post_meta($post->ID, '_entity_rating_value', true);
+    $review_count  = get_post_meta($post->ID, '_entity_review_count', true);
+    $sport         = get_post_meta($post->ID, '_entity_sport', true);
+    $price_range   = get_post_meta($post->ID, '_entity_price_range', true);
+    $opening_hours = get_post_meta($post->ID, '_entity_opening_hours', true);
+
     ?>
 
     <div class="geo-schema-properties">
@@ -395,6 +404,131 @@ function geo_entity_schema_meta_box($post) {
         </table>
         <?php endif; ?>
 
+        <?php if (in_array($current_type, ['Organization', 'LocalBusiness', 'ProfessionalService', 'Restaurant', 'Store'])): ?>
+        <h4>Geolocalisation & plan</h4>
+        <p class="description" style="margin-bottom: 10px;">Obligatoire pour un bon referencement local (LocalBusiness).</p>
+        <table class="form-table">
+            <tr>
+                <th><label for="entity_geo_latitude">Latitude</label></th>
+                <td>
+                    <input type="text"
+                           id="entity_geo_latitude"
+                           name="entity_geo_latitude"
+                           value="<?php echo esc_attr($geo_latitude); ?>"
+                           class="regular-text"
+                           placeholder="48.200048">
+                </td>
+            </tr>
+
+            <tr>
+                <th><label for="entity_geo_longitude">Longitude</label></th>
+                <td>
+                    <input type="text"
+                           id="entity_geo_longitude"
+                           name="entity_geo_longitude"
+                           value="<?php echo esc_attr($geo_longitude); ?>"
+                           class="regular-text"
+                           placeholder="-1.722774">
+                </td>
+            </tr>
+
+            <tr>
+                <th><label for="entity_has_map">Lien Google Maps (hasMap)</label></th>
+                <td>
+                    <input type="url"
+                           id="entity_has_map"
+                           name="entity_has_map"
+                           value="<?php echo esc_url($has_map); ?>"
+                           class="regular-text"
+                           placeholder="https://maps.google.com/?cid=...">
+                    <p class="description">URL du lieu sur Google Maps (avec CID si possible).</p>
+                </td>
+            </tr>
+        </table>
+
+        <h4>Horaires d'ouverture</h4>
+        <p class="description" style="margin-bottom: 10px;">Format JSON simple : un objet ou un tableau d'objets OpeningHoursSpecification.</p>
+        <table class="form-table">
+            <tr>
+                <th><label for="entity_opening_hours">OpeningHoursSpecification</label></th>
+                <td>
+                    <textarea id="entity_opening_hours"
+                              name="entity_opening_hours"
+                              rows="10"
+                              class="large-text code"
+                              placeholder='[
+  {
+    "@type": "OpeningHoursSpecification",
+    "dayOfWeek": ["Monday","Tuesday","Wednesday","Thursday","Friday"],
+    "opens": "15:00",
+    "closes": "00:00"
+  }
+]'><?php echo esc_textarea($opening_hours); ?></textarea>
+                    <p class="description">Sera decode en JSON et injecte dans le schema.</p>
+                </td>
+            </tr>
+        </table>
+
+        <h4>Informations commerciales</h4>
+        <table class="form-table">
+            <tr>
+                <th><label for="entity_sport">Sport propose</label></th>
+                <td>
+                    <input type="text"
+                           id="entity_sport"
+                           name="entity_sport"
+                           value="<?php echo esc_attr($sport); ?>"
+                           class="regular-text"
+                           placeholder="Karting">
+                </td>
+            </tr>
+
+            <tr>
+                <th><label for="entity_price_range">Gamme de prix (priceRange)</label></th>
+                <td>
+                    <input type="text"
+                           id="entity_price_range"
+                           name="entity_price_range"
+                           value="<?php echo esc_attr($price_range); ?>"
+                           class="regular-text"
+                           placeholder="€€">
+                </td>
+            </tr>
+        </table>
+
+        <h4>Avis agreges (aggregateRating)</h4>
+        <p class="description" style="margin-bottom: 10px;">Note moyenne et nombre d'avis (ex: Google).</p>
+        <table class="form-table">
+            <tr>
+                <th><label for="entity_rating_value">Note moyenne</label></th>
+                <td>
+                    <input type="number"
+                           id="entity_rating_value"
+                           name="entity_rating_value"
+                           value="<?php echo esc_attr($rating_value); ?>"
+                           class="regular-text"
+                           step="0.1"
+                           min="0"
+                           max="5"
+                           placeholder="4.2">
+                </td>
+            </tr>
+
+            <tr>
+                <th><label for="entity_review_count">Nombre d'avis</label></th>
+                <td>
+                    <input type="number"
+                           id="entity_review_count"
+                           name="entity_review_count"
+                           value="<?php echo esc_attr($review_count); ?>"
+                           class="regular-text"
+                           min="0"
+                           placeholder="826">
+                </td>
+            </tr>
+        </table>
+        <?php endif; ?>
+
     </div>
 
     <?php
@@ -408,6 +542,8 @@ function geo_entity_relations_meta_box($post) {
 
     $types = wp_get_post_terms($post->ID, 'entity_type');
     $current_type = $types && !is_wp_error($types) ? $types[0]->name : '';
+
+    $parent_organization = get_post_meta($post->ID, '_entity_parent_organization', true);
 
     $organizations = get_posts([
         'post_type'      => 'entity',
@@ -424,6 +560,26 @@ function geo_entity_relations_meta_box($post) {
     $site_name = get_bloginfo('name');
 
     ?>
+
+    <?php if (in_array($current_type, ['LocalBusiness', 'ProfessionalService', 'Restaurant', 'Store'])): ?>
+    <p>
+        <label for="entity_parent_organization"><strong>Organization parente (parentOrganization)</strong></label><br>
+        <select id="entity_parent_organization" name="entity_parent_organization" style="width: 100%;">
+            <option value="">-- Aucune --</option>
+            <option value="main_organization" <?php selected($parent_organization, 'main_organization'); ?>>
+                <?php echo esc_html($site_name); ?> (Organization principale)
+            </option>
+            <?php foreach ($organizations as $org): ?>
+                <?php if ($org->ID == $post->ID) continue; ?>
+                <option value="<?php echo $org->ID; ?>" <?php selected($parent_organization, $org->ID); ?>>
+                    <?php echo esc_html($org->post_title); ?>
+                </option>
+            <?php endforeach; ?>
+        </select>
+        <span class="description">Lien vers l'Organization principale (evite la confusion avec LocalBusiness)</span>
+    </p>
+    <hr style="margin: 15px 0; border: none; border-top: 1px solid #ddd;">
+    <?php endif; ?>
 
     <?php if ($current_type === 'Service'): ?>
     <p>
@@ -518,6 +674,15 @@ add_action('save_post_entity', function ($post_id) {
         'entity_works_for'          => 'sanitize_text_field',
         'entity_member_of'          => 'sanitize_text_field',
         'entity_provider'           => 'sanitize_text_field',
+        'entity_geo_latitude'       => 'sanitize_text_field',
+        'entity_geo_longitude'      => 'sanitize_text_field',
+        'entity_has_map'            => 'esc_url_raw',
+        'entity_rating_value'       => 'sanitize_text_field',
+        'entity_review_count'       => 'sanitize_text_field',
+        'entity_sport'              => 'sanitize_text_field',
+        'entity_price_range'        => 'sanitize_text_field',
+        'entity_opening_hours'      => 'sanitize_textarea_field',
+        'entity_parent_organization'=> 'sanitize_text_field',
     ];
 
     foreach ($fields as $field => $sanitize_function) {
