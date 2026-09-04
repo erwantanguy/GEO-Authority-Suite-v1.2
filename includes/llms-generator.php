@@ -73,14 +73,25 @@ function geo_generate_llms_content(): string {
             $url = get_permalink($post);
             $excerpt = wp_strip_all_tags(get_the_excerpt($post));
             $date = get_the_date('Y-m-d', $post);
+            $modified = get_the_modified_date('Y-m-d', $post);
 
             $content .= "### $title\n";
             $content .= "URL : $url\n";
             $content .= "Date : $date\n";
 
+            if ($modified !== $date) {
+                $content .= "Mis a jour le : $modified\n";
+            }
+
             $score = get_post_meta($post->ID, '_gco_score', true);
             if ($score !== '') {
                 $content .= "Score GEO : $score/100\n";
+            }
+
+            // Reponse directe extraite des blocs GEO (TL;DR ou Reponse directe)
+            $direct_answer = geo_extract_direct_answer($post);
+            if (!empty($direct_answer)) {
+                $content .= "Reponse directe : $direct_answer\n";
             }
 
             if (!empty($excerpt)) {

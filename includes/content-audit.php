@@ -313,6 +313,15 @@ function geo_render_content_audit_page() {
                 </div>
             </div>
         </div>
+
+        <?php
+        /**
+         * Sections supplementaires de l'audit de contenu.
+         *
+         * @param array $posts Contenus audites.
+         */
+        do_action('geo_content_audit_extra_section', $posts);
+        ?>
     </div>
     <?php
 }

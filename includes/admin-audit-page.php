@@ -154,6 +154,13 @@ echo json_encode(
             </ul>
         </div>
 
+        <?php
+        /**
+         * Sections supplementaires de l'audit d'entites.
+         */
+        do_action('geo_entity_audit_extra_section');
+        ?>
+
         <p style="margin-top: 30px;">
             <a href="<?php echo admin_url('edit.php?post_type=entity&page=geo-entity-audit'); ?>" class="button button-primary">
                 Relancer l'audit
